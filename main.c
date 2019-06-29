@@ -33,7 +33,8 @@ void Salir ();
 // ----------------------------------------------
 
 // funciones del usuario ------------------------
-void Usuario_ver_perfil ();
+void Usuario_ver_perfil (int id);
+stUsuario buscarUsuario(int id);
 void Usuario_mostrar_playlist ();
 void Usuario_escuchar_cancion ();
 void Usuario_canciones_recomendadas ();
