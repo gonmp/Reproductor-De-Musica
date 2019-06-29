@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1561571656 source:c:\users\mat\desktop\proyecto final de programacion\prototipo\3_llenando_funciones\main.c
+	<stdio.h>
+	<stdlib.h>
+	<conio.h>
+	<ctype.h>
+	<string.h>
+	"funciones_archivos.h"
+
+1561570611 c:\users\mat\desktop\proyecto final de programacion\prototipo\3_llenando_funciones\funciones_archivos.h
+
