@@ -58,10 +58,12 @@ void Admin_cambiar_administrar_canciones ();
 // ----------------------------------------------
 
 // funciones del admin para administrar canciones
+void mostrarCancionAdmin(stCancion cancion);
 void Admin_listar_canciones ();
 void Admin_alta_cancion ();
 void Admin_baja_cancion ();
 void Admin_modificiar_cancion ();
+void cambiarCancionDeID(int idCancion, stCancion cancion);
 void Admin_consultar_cancion ();
 void Admin_cambiar_administrar_usuarios ();
 // ----------------------------------------------
@@ -608,6 +610,23 @@ void Admin_administrar_canciones ()
 void Admin_listar_usuarios ()
 {
     printf("\nmostrando lista usuarios\n");
+
+    FILE *pArchivo = fopen(NOMBRE_ARCHIVO, "rb");
+    stUsuario usuario;
+
+    if(pArchivo != NULL)
+    {
+       while(fread(&usuario, sizeof(stUsuario), 1, pArchivo) > 0)
+       {
+           printf("\nID: %d\n", usuario.idUsuario);
+           printf("Nombre: %s", usuario.nombreUsuario);
+           printf("\n-----------------------------\n");
+       }
+
+       fclose(pArchivo);
+
+    }
+
 }
 void Admin_alta_usuario ()
 {
@@ -616,6 +635,8 @@ void Admin_alta_usuario ()
 void Admin_baja_usuario ()
 {
     printf("\ndando de baja usuario\n");
+
+
 }
 void Admin_modificiar_usuario ()
 {
@@ -623,9 +644,15 @@ void Admin_modificiar_usuario ()
 }
 void Admin_consultar_perfil ()
 {
+    int idUsuario = 0;
+
     printf("\nconsultando perfil usuario\n");
 
+    printf("Ingrese el id del perfil que desee consultar: ");
 
+    scanf("%d", &idUsuario);
+
+    Usuario_ver_perfil(idUsuario);
 }
 void Admin_cambiar_administrar_canciones()
 {
@@ -637,11 +664,72 @@ void Admin_cambiar_administrar_canciones()
 void Admin_listar_canciones ()
 {
     printf("\nmostrando canciones\n");
+
+    FILE *pArchivo = fopen(NOMBRE_ARCHIVO_CANCIONES, "rb");
+    stCancion cancion;
+
+    if(pArchivo != NULL)
+    {
+        while(fread(&cancion, sizeof(stCancion), 1, pArchivo) > 0)
+        {
+            printf("\nID: %d\n", cancion.idCancion);
+            printf("Nombre: %s", cancion.titulo);
+            printf("\n-----------------------------\n");
+        }
+
+        fclose(pArchivo);
+    }
 }
+
+void mostrarCancionAdmin(stCancion cancion)
+{
+    printf("\n");
+    printf("ID: %d\n", cancion.idCancion);
+    printf("Titulo: %s\n", cancion.titulo);
+    printf("Artista: %s\n", cancion.artista);
+    printf("Duracion en segundos: %d\n", cancion.duracion);
+    printf("Album: %s\n", cancion.album);
+    printf("A%co: %s\n", 164, cancion.artista);
+    printf("Genero: %s\n", cancion.genero);
+    printf("Comentarios: %s\n", cancion.comentario);
+    if(cancion.eliminado == 1)
+    {
+        printf("Cancion activa");
+    }
+    else
+    {
+        printf("Cancion eliminada");
+    }
+    printf("\n-----------------------------\n");
+}
+
 void Admin_alta_cancion ()
 {
     printf("\ndando de alta una cancion\n");
+
+    stCancion cancion;
+
+    cancion.idCancion = nuevoIDCancion();
+
+    printf("Ingrese el titulo: ");
+    gets(cancion.titulo);
+    printf("Ingrese el artista: ");
+    gets(cancion.artista);
+    printf("Ingrese la duracion: ");
+    scanf("%d", &cancion.duracion);
+    printf("Ingrese el album de la cancion: ");
+    gets(cancion.album);
+    printf("Ingrese el a%co: ", 164);
+    scanf("%d", &cancion.anio);
+    printf("Ingrese el genero: ");
+    gets(cancion.genero);
+    printf("Comentarios: ");
+    gets(cancion.comentario);
+    cancion.eliminado = 1;
+
+    registrarCancionArchivo(cancion);
 }
+
 void Admin_baja_cancion ()
 {
     printf("\ndando de baja una cancion\n");
@@ -649,10 +737,133 @@ void Admin_baja_cancion ()
 void Admin_modificiar_cancion ()
 {
     printf("\nmodificando una cancion\n");
+
+    int idCancion = 0;
+    char opcion = ' ';
+    int control = 0;
+    stCancion cancion;
+
+    printf("Ingrese el id de la cancion que desea modificar: ");
+    scanf("%d", &idCancion);
+
+    cancion = buscarCancionPorID(idCancion);
+
+    while(control == 0)
+    {
+        system("cls");
+        printf("\n1 - Modificar titulo");
+        printf("\n2 - Modificar artista");
+        printf("\n3 - Modificar duracion");
+        printf("\n4 - Modificar album");
+        printf("\n5 - Modificar a%co", 164);
+        printf("\n6 - Modificar genero");
+        printf("\n7 - Modificar comentarios");
+        printf("\n8 - Eliminar/Agregar cancion");
+
+        printf("Ingrese una opcion: ");
+        fflush(stdin);
+
+        opcion = getch();
+
+        switch(opcion)
+        {
+            case '1':
+                printf("\nIngrese el nuevo titulo: ");
+                gets(cancion.titulo);
+                control = 1;
+                break;
+
+            case '2':
+                printf("\nIngrese el nuevo artista: ");
+                gets(cancion.titulo);
+                control = 1;
+                break;
+
+            case '3':
+                printf("\nIngrese la nueva duracion: ");
+                scanf("%d", &cancion.duracion);
+                control = 1;
+                break;
+
+            case '4':
+                printf("\nIngrese el nuevo album: ");
+                gets(cancion.album);
+                control = 1;
+                break;
+
+            case '5':
+                printf("\nIngrese nuevo a%co: ", 164);
+                scanf("%d", &cancion.anio);
+                control = 1;
+                break;
+
+            case '6':
+                printf("\nIngrese el nuevo genero: ");
+                gets(cancion.genero);
+                control = 1;
+                break;
+
+            case '7':
+                printf("\nIngrese los nuevos comentarios: ");
+                gets(cancion.comentario);
+                control = 1;
+                break;
+
+            case '8':
+                if(cancion.idCancion == 1)
+                {
+                    cancion.idCancion = 0;
+                    printf("\nCancion eliminada");
+                }
+                else
+                {
+                    cancion.idCancion = 1;
+                    printf("\nCancion agregada");
+                }
+
+                control = 1;
+                break;
+
+            default:
+                printf("Tecla incorrecta");
+                fflush(stdin);
+                getch();
+                break;
+        }
+
+        cambiarCancionDeID(cancion.idCancion, cancion);
+
+    }
 }
+
+void cambiarCancionDeID(int idCancion, stCancion cancion)
+{
+    FILE *pArchivo = fopen(NOMBRE_ARCHIVO_CANCIONES, "r+b");
+
+    if(pArchivo != NULL)
+    {
+        fseek(pArchivo, sizeof(stCancion) * (idCancion - 1), SEEK_SET);
+
+        fwrite(&cancion, sizeof(stCancion), 1, pArchivo);
+
+        fclose(pArchivo);
+    }
+}
+
 void Admin_consultar_cancion ()
 {
     printf("\nconsultando una cancion\n");
+
+    int idCancion = 0;
+    stCancion cancion;
+
+    printf("Ingrese el id de la cancion que desee consultar: ");
+
+    scanf("%d", &idCancion);
+
+    cancion = buscarCancionPorID(idCancion);
+
+    mostrarCancionAdmin(cancion);
 }
 void Admin_cambiar_administrar_usuarios()
 {
