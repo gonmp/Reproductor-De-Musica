@@ -21,7 +21,7 @@ int cerrando_sesion = FALSO;    // para saber si se esta cerrando la sesion
 
 // ventanas principales -------------------------
 int Ventana_menu_principal ();
-void Ventana_usuario ();
+void Ventana_usuario (int idUsuario);
 void Ventana_administrador ();
 // ----------------------------------------------
 
@@ -33,9 +33,11 @@ void Salir ();
 // ----------------------------------------------
 
 // funciones del usuario ------------------------
-void Usuario_ver_perfil (int id);
-stUsuario buscarUsuario(int id);
-void Usuario_mostrar_playlist ();
+void Usuario_ver_perfil (int idUsuario);
+stUsuario buscarUsuarioPorID(int idUsuario);
+stCancion buscarCancionPorID(int idCancion);
+stUsuario buscarUsuarioPorNombre(char nombreUsuario[]);
+void Usuario_mostrar_playlist (int idUsuario);
 void Usuario_escuchar_cancion ();
 void Usuario_canciones_recomendadas ();
 void Usuario_listar_canciones ();
@@ -139,6 +141,7 @@ int Ventana_menu_principal ()
 // ventanas del menu principal ------------------
 void Ingresar_usuario ()
 {
+    stUsuario usuario;
     printf("\ningresando usuario\n\n");
 
     printf("Ingrese su nombre de usuario:\n");
@@ -146,8 +149,10 @@ void Ingresar_usuario ()
     fflush(stdin);
     gets(nombre_usuario);
 
+    usuario = buscarUsuarioPorNombre(nombre_usuario);
+
     char tecla = '0';
-    while (Usuario_existe(nombre_usuario) == FALSO && tecla != ESC)
+    while (usuario.idUsuario == -1 && tecla != ESC)
     {
         printf("\nUsuario invalido, Para salir del programa presione ESC\n");
         printf("Presione otra tecla para ingresar un nuevo usuario\n\n");
@@ -164,7 +169,7 @@ void Ingresar_usuario ()
 
     if (Usuario_existe(nombre_usuario) == VERDADERO)
     {
-        Ventana_usuario();
+        Ventana_usuario(usuario.idUsuario);
     }
 }
 void Ingresar_administrador ()
@@ -230,7 +235,7 @@ void Salir ()
 // ----------------------------------------------
 
 // usuario --------------------------------------
-void Ventana_usuario ()
+void Ventana_usuario (int idUsuario)
 {
     while (cerrando_sesion != VERDADERO)
     {
@@ -252,11 +257,11 @@ void Ventana_usuario ()
         switch (tecla)
         {
             case '1':
-                Usuario_ver_perfil();
+                Usuario_ver_perfil(idUsuario);
                 break;
 
             case '2':
-                Usuario_mostrar_playlist();
+                Usuario_mostrar_playlist(idUsuario);
                 break;
 
             case '3':
@@ -283,11 +288,11 @@ void Ventana_usuario ()
 }
 // ----------------------------------------------
 // funciones del usuario ------------------------
-void Usuario_ver_perfil (int id)
+void Usuario_ver_perfil (int idUsuario)
 {
     printf("viendo el perfil\n");
 
-    stUsuario usuario = buscarUsuario(id);
+    stUsuario usuario = buscarUsuarioPorID(idUsuario);
 
     if(usuario.idUsuario == -1 || usuario.eliminado == 0)
     {
@@ -300,19 +305,19 @@ void Usuario_ver_perfil (int id)
 
         if(usuario.genero == 'm')
         {
-            printf("\Genero: Masculino");
+            printf("\nGenero: Masculino");
         }
         else
         {
-            printf("\Genero: Femenino");
+            printf("\nGenero: Femenino");
         }
         printf("\nPais: %s\n", usuario.pais);
         printf("Playlists: \n");
-        Usuario_mostrar_playlist();
+        Usuario_mostrar_playlist(idUsuario);
     }
 }
 
-stUsuario buscarUsuario(int id)
+stUsuario buscarUsuarioPorID(int idUsuario)
 {
     FILE *pArchivo = fopen(NOMBRE_ARCHIVO, "rb");
     stUsuario usuario;
@@ -322,7 +327,7 @@ stUsuario buscarUsuario(int id)
     {
         while(flag != 1 && fread(&usuario, sizeof(stUsuario), 1, pArchivo) > 0)
         {
-            if(usuario.idUsuario == id)
+            if(usuario.idUsuario == idUsuario)
             {
                 flag = 1;
             }
@@ -339,9 +344,98 @@ stUsuario buscarUsuario(int id)
     return usuario;
 }
 
-void Usuario_mostrar_playlist ()
+stUsuario buscarUsuarioPorNombre(char nombreUsuario[])
+{
+    stUsuario usuario;
+    FILE *pArchivo = fopen(NOMBRE_ARCHIVO, "rb");
+    int flag = 0;
+
+    if(pArchivo != NULL)
+    {
+        while(flag != 1 && fread(&usuario, sizeof(stUsuario), 1, pArchivo) > 0)
+        {
+            if(strcmp(nombreUsuario, usuario.nombreUsuario) == 0)
+            {
+                flag = 1;
+            }
+        }
+
+        if(flag == 0)
+        {
+            usuario.idUsuario = -1;
+        }
+
+        fclose(pArchivo);
+    }
+
+    return usuario;
+}
+
+stCancion buscarCancionPorID(int idCancion)
+{
+    FILE *pArchivo = fopen(NOMBRE_ARCHIVO_CANCIONES, "rb");
+    stCancion cancion;
+    int flag = 0;
+
+    if(pArchivo != NULL)
+    {
+        while(flag != 1 && fread(&cancion, sizeof(stCancion), 1, pArchivo) > 0)
+        {
+            if(cancion.idCancion == idCancion)
+            {
+                flag = 1;
+            }
+        }
+
+        if(flag == 0)
+        {
+            cancion.idCancion = -1;
+        }
+
+        fclose(pArchivo);
+    }
+
+    return cancion;
+}
+
+void mostrarCancion(stCancion cancion)
+{
+    printf("\nNombre: %s\n", cancion.titulo);
+    printf("Duracion: %d\n", cancion.duracion);
+    printf("-----------------------------");
+}
+
+void Usuario_mostrar_playlist (int idUsuario)
 {
     printf("mostrando playlist\n");
+
+    stUsuario usuario = buscarUsuarioPorID(idUsuario);
+
+    FILE *pArchivo = fopen(NOMBRE_ARCHIVO_CANCIONES, "ab");
+    stCancion cancion;
+
+    if(usuario.idUsuario == -1)
+    {
+        printf("El usuario buscado no existe");
+    }
+    else if(pArchivo != NULL)
+    {
+        for(int i = 0; i < usuario.cantidad; i++)
+        {
+            printf("\nCancion %d\n", i);
+            cancion = buscarCancionPorID(usuario.playlist[i]);
+            if(cancion.idCancion == -1)
+            {
+                printf("La cancion no existe");
+            }
+            else
+            {
+               mostrarCancion(cancion);
+            }
+        }
+
+        fclose(pArchivo);
+    }
 }
 void Usuario_escuchar_cancion ()
 {
@@ -530,6 +624,8 @@ void Admin_modificiar_usuario ()
 void Admin_consultar_perfil ()
 {
     printf("\nconsultando perfil usuario\n");
+
+
 }
 void Admin_cambiar_administrar_canciones()
 {

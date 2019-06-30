@@ -4,6 +4,7 @@
 #define FALSO 0
 #define VERDADERO 1
 #define NOMBRE_ARCHIVO "usuarios.dat"
+#define NOMBRE_ARCHIVO_CANCIONES "canciones.dat"
 
 typedef struct
 {
@@ -19,6 +20,19 @@ typedef struct
 
 } stUsuario;
 
+typedef struct
+{
+    int idCancion;
+    char titulo[30];
+    char artista[20];
+    int duracion;
+    char album[20];
+    int anio;
+    char genero[20];
+    char comentario[100];
+    int eliminado;
+} stCancion;
+
 int Nuevo_id_usuario ()
 {
     int nuevoID = 0;
@@ -29,7 +43,7 @@ int Nuevo_id_usuario ()
         stUsuario usuario;
 
         fseek(fArchivo, sizeof(stUsuario) * -1, SEEK_END);
-        fread(&usuario, sizeof(stUsuario), 1, fArchivo);
+        fread(&usuario, sizeof(stUsuario), 1, fArchivo);  ///Corregir que pasa si fread no es > 0
 
         nuevoID = usuario.idUsuario;
         nuevoID++;
@@ -71,6 +85,38 @@ void Registrar_usuario_archivo (stUsuario usuario)
         fwrite(&usuario, sizeof(usuario), 1, fArchivo);
 
         fclose(fArchivo);
+    }
+}
+
+int nuevoIDCancion()
+{
+    int nuevoID = 0;
+
+    FILE* pArchivo = fopen(NOMBRE_ARCHIVO_CANCIONES, "rb");
+    if (pArchivo != NULL)
+    {
+        stCancion cancion;
+
+        fseek(pArchivo, sizeof(stCancion) * -1, SEEK_END);
+        fread(&cancion, sizeof(stCancion), 1, pArchivo);  ///Corregir que pasa si fread no es > 0
+
+        nuevoID = cancion.idCancion;
+        nuevoID++;
+
+        fclose(pArchivo);
+    }
+
+    return nuevoID;
+}
+
+void registrarCancionArchivo (stCancion cancion)
+{
+    FILE* pArchivo = fopen(NOMBRE_ARCHIVO_CANCIONES, "ab");
+    if (pArchivo != NULL)
+    {
+        fwrite(&cancion, sizeof(stCancion), 1, pArchivo);
+
+        fclose(pArchivo);
     }
 }
 
